@@ -96,7 +96,7 @@ shorter more (x :: xs) = LTESucc (lteSuccLeft (shorter more xs))
 doParse : {c : Bool} ->
           (commit : Bool) -> (xs : List tok) -> (act : Grammar tok c ty) -> 
           ParseResult xs c ty
-doParse com xs act with (smallerAcc xs)
+doParse com xs act with (sizeAccessible xs)
   doParse com xs (Empty val) | sml = EmptyRes com val xs
   doParse com [] (Fail str) | sml = Failure com str []
   doParse com (x :: xs) (Fail str) | sml = Failure com str (x :: xs)
@@ -136,7 +136,7 @@ doParse com xs act with (smallerAcc xs)
                             EmptyRes com' val xs => EmptyRes com' val xs
                             NonEmptyRes com' val more => NonEmptyRes com' val more
                  NonEmptyRes {x} {xs=ys} com val more => 
-                       case (doParse com more (next val) | morerec _ (shorter more ys)) of
+                       case (doParse com more (next val) | morerec _ (Erase $ shorter more ys)) of
                             Failure com' msg ts => Failure com' msg ts
                             EmptyRes com' val _ => NonEmptyRes com' val more
                             NonEmptyRes {x=x1} {xs=xs1} com' val more' =>
@@ -146,7 +146,7 @@ doParse com xs act with (smallerAcc xs)
     doParse com xs (SeqEat act next) | sml | Failure com' msg ts 
          = Failure com' msg ts
     doParse com (x :: (ys ++ more)) (SeqEat act next) | (Access morerec) | (NonEmptyRes com' val more) 
-         = case doParse com' more (next val) | morerec _ (shorter more ys) of
+         = case doParse com' more (next val) | morerec _ (Erase $ shorter more ys) of
                 Failure com' msg ts => Failure com' msg ts
                 EmptyRes com' val _ => NonEmptyRes com' val more
                 NonEmptyRes {x=x1} {xs=xs1} com' val more' => 
